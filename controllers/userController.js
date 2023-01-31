@@ -38,14 +38,39 @@ const loginUser = asyncHandler(async (req, res) => {
         lastName: findUser?.lastName,
         email: findUser?.email,
         mobile: findUser?.mobile,
+        role: findUser?.role,
         isAdmin: findUser?.isAdmin,
         token: generateToken(findUser?._id),
       });
     } else {
       // Password does not match
       //res.status(400).json({ message: "Invalid credentials" });
-      throw new Error("Invalid credentials");
+      throw new Error("Invalid credentials. Please try again");
     }
+  }
+});
+
+//Update user by id
+const updateUserById = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        mobile: req.body.mobile,
+        isAdmin: req.body.isAdmin,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    console.log("User updated successfully");
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
   }
 });
 
@@ -53,6 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
     const users = await User.find({});
+    console.log(users);
     res.json(users);
   } catch (error) {
     throw new Error(error);
@@ -62,8 +88,8 @@ const getAllUsers = asyncHandler(async (req, res) => {
 //Get user by id
 const getUserById = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    //console.log(user);
+    const user = await User.findById(req.user._id);
+    console.log(user);
     res.json(user);
   } catch (error) {
     throw new Error(error);
@@ -88,4 +114,5 @@ module.exports = {
   getAllUsers,
   getUserById,
   deleteUserById,
+  updateUserById,
 };
