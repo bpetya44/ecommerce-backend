@@ -1,12 +1,14 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/jwt");
+const validateMongodbId = require("../utils/validateMongodbId");
 
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const findUser = await User.findOne({ email });
-  if (!findUser) {
+  const { email, mobile } = req.body;
+  const findEmail = await User.findOne({ email });
+  const findMobile = await User.findOne({ mobile });
+  if (!findEmail && !findMobile) {
     // Create a new user
     const user = User.create(req.body);
     res.status(200).json({ message: "User created successfully" });
@@ -50,11 +52,51 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
+//Get all users
+const getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find({});
+    console.log(users);
+    res.json(users);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//Get user by id
+const getUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
+  try {
+    const user = await User.findById(id);
+    console.log(user);
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//Delete user by id
+const deleteUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
+  try {
+    const user = await User.findByIdAndDelete(id);
+    console.log("User deleted successfully");
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //Update user by id
 const updateUserById = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongodbId(_id);
+
   try {
     const user = await User.findByIdAndUpdate(
-      req.params.id,
+      _id,
       {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
@@ -74,33 +116,46 @@ const updateUserById = asyncHandler(async (req, res) => {
   }
 });
 
-//Get all users
-const getAllUsers = asyncHandler(async (req, res) => {
-  try {
-    const users = await User.find({});
-    console.log(users);
-    res.json(users);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+//Block user by id
+const blockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
 
-//Get user by id
-const getUserById = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    console.log(user);
+    const user = await User.findByIdAndUpdate(
+      id,
+      {
+        isBlocked: true,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    console.log("User blocked successfully");
     res.json(user);
   } catch (error) {
     throw new Error(error);
   }
 });
 
-//Delete user by id
-const deleteUserById = asyncHandler(async (req, res) => {
+//Unblock user by id
+const unBlockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
+
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    console.log("User deleted successfully");
+    const user = await User.findByIdAndUpdate(
+      id,
+      {
+        isBlocked: false,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    console.log("User unblocked successfully");
     res.json(user);
   } catch (error) {
     throw new Error(error);
@@ -115,4 +170,6 @@ module.exports = {
   getUserById,
   deleteUserById,
   updateUserById,
+  blockUser,
+  unBlockUser,
 };
