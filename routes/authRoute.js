@@ -9,7 +9,9 @@ const {
   updateUserById,
   blockUser,
   unBlockUser,
+  handleRefreshToken,
 } = require("../controllers/userController");
+
 const {
   authMiddleware,
   adminMiddleware,
@@ -20,6 +22,7 @@ router.post("/login", loginUser);
 
 router.get("/all", getAllUsers);
 router.get("/:id", authMiddleware, adminMiddleware, getUserById);
+router.get("/refresh", handleRefreshToken);
 
 router.delete("/:id", authMiddleware, deleteUserById);
 router.put("/edit-user/", authMiddleware, updateUserById);

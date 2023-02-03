@@ -2,6 +2,8 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/jwt");
 const validateMongodbId = require("../utils/validateMongodbId");
+const generateRefreshToken = require("../config/refreshToken");
+const jwt = require("jsonwebtoken");
 
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
@@ -22,41 +24,70 @@ const createUser = asyncHandler(async (req, res) => {
 // Login user and generate token
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  //console.log(email, password);
 
   //check if user exists
   const findUser = await User.findOne({ email });
-  if (findUser) {
+  const isPasswordMatch = await findUser.isPasswordMatch(password);
+
+  if (findUser && isPasswordMatch) {
     // User exists
-    // Check if password matches
-    const isPasswordMatch = await findUser.isPasswordMatch(password);
-    if (isPasswordMatch) {
-      // Password matches
-      //res.json(findUser);
-      res.status(200).json({
-        message: "User logged in successfully",
-        _id: findUser?._id,
-        firstName: findUser?.firstName,
-        lastName: findUser?.lastName,
-        email: findUser?.email,
-        mobile: findUser?.mobile,
-        role: findUser?.role,
-        isAdmin: findUser?.isAdmin,
-        token: generateToken(findUser?._id),
-      });
-    } else {
-      // Password does not match
-      //res.status(400).json({ message: "Invalid credentials" });
-      throw new Error("Invalid credentials. Please try again");
-    }
+    // Generate refresh token
+    const refreshToken = await generateRefreshToken(findUser?._id);
+    //console.log(refreshToken);
+    const updateUser = await User.findByIdAndUpdate(
+      findUser?._id,
+      {
+        refreshToken,
+      },
+      { new: true }
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000, // 3 days
+    });
+    res.json({
+      _id: findUser?._id,
+      firstName: findUser?.name,
+      lastName: findUser?.lastName,
+      email: findUser?.email,
+      mobile: findUser?.mobile,
+      token: generateToken(findUser?._id),
+    });
+  } else {
+    //res.status(400).json({ message: "Invalid credentials. Please try again" });
+    throw new Error("Invalid credentials. Please try again");
   }
 });
+
+//Handle refresh token
+const handleRefreshToken = asyncHandler(async (req, res) => {
+  const cookie = req.cookies;
+
+  if (!cookie?.refreshToken) {
+    throw new Error("No refresh token");
+  }
+  const refreshToken = cookie.refreshToken;
+
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    throw new Error("No matched refresh token in db");
+  }
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+    if (err || user._id !== decoded.id) {
+      throw new Error("There is an error with the refresh token");
+    }
+    const accessToken = generateToken(user?._id);
+    res.json({ accessToken });
+  });
+});
+
+//Logout user
 
 //Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
     const users = await User.find({});
-    console.log(users);
+
     res.json(users);
   } catch (error) {
     throw new Error(error);
@@ -69,7 +100,7 @@ const getUserById = asyncHandler(async (req, res) => {
   validateMongodbId(id);
   try {
     const user = await User.findById(id);
-    console.log(user);
+
     res.json(user);
   } catch (error) {
     throw new Error(error);
@@ -172,4 +203,5 @@ module.exports = {
   updateUserById,
   blockUser,
   unBlockUser,
+  handleRefreshToken,
 };
