@@ -4,36 +4,33 @@ const asyncHandler = require("express-async-handler");
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  if (req?.headers?.authorization?.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
     try {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      //console.log(decoded);
-      req.user = await User.findById(decoded.id).select("-password");
-      next();
+      if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded?.id);
+        req.user = user;
+        next();
+      }
     } catch (error) {
-      console.error(error);
-      res.status(401);
-      throw new Error("Not authorized, token failed. Try again");
+      throw new Error("Not Authorized token expired, Please Login again");
     }
-  }
-  if (!token) {
-    res.status(401);
-    throw new Error("Not authorized, no token");
+  } else {
+    throw new Error(" There is no token attached to header");
   }
 });
 
 const adminMiddleware = asyncHandler(async (req, res, next) => {
-  console.log("req.user", req.user);
-  if (req.user && req.user.isAdmin) {
-    next();
-  } else {
-    res.status(401);
-    throw new Error("Not authorized as an admin");
-  }
+  asyncHandler(async (req, res, next) => {
+    const { email } = req.user;
+    const adminUser = await User.findOne({ email });
+    if (adminUser.role !== "admin") {
+      throw new Error("You are not an admin");
+    } else {
+      next();
+    }
+  });
 });
 
 module.exports = { authMiddleware, adminMiddleware };

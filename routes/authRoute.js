@@ -10,6 +10,7 @@ const {
   blockUser,
   unBlockUser,
   handleRefreshToken,
+  logout,
 } = require("../controllers/userController");
 
 const {
@@ -20,11 +21,13 @@ const {
 router.post("/register", createUser);
 router.post("/login", loginUser);
 
+router.get("/refresh", handleRefreshToken);
 router.get("/all", getAllUsers);
 router.get("/:id", authMiddleware, adminMiddleware, getUserById);
-router.get("/refresh", handleRefreshToken);
+router.get("/logout", logout);
 
-router.delete("/:id", authMiddleware, deleteUserById);
+router.delete("/:id", deleteUserById);
+
 router.put("/edit-user/", authMiddleware, updateUserById);
 router.put("/block-user/:id", authMiddleware, adminMiddleware, blockUser);
 router.put("/unblock-user/:id", authMiddleware, adminMiddleware, unBlockUser);
