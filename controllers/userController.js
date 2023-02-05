@@ -1,8 +1,8 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
+const validateMongodbId = require("../utils/validateMongodbId");
 const jwt = require("jsonwebtoken");
 const generateToken = require("../config/jwt");
-const validateMongodbId = require("../utils/validateMongodbId");
 const generateRefreshToken = require("../config/refreshToken");
 
 // Create a new user
@@ -34,7 +34,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const refreshToken = await generateRefreshToken(findUser?._id);
     //console.log(refreshToken);
     const updateUser = await User.findByIdAndUpdate(
-      findUser?._id,
+      findUser?.id,
       {
         refreshToken: refreshToken,
       },
@@ -84,17 +84,18 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 //Logout user
 const logout = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  if (!cookie?.refreshToken) {
-    throw new Error("No refresh token in cookie");
-  }
+
+  if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+
   const refreshToken = cookie.refreshToken;
   const user = await User.findOne({ refreshToken });
+
   if (!user) {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: true,
     });
-    return res.sendStatus(204); //forbidden
+    return res.sendStatus(204); // forbidden
   }
 
   await User.findOneAndUpdate(refreshToken, {
@@ -104,7 +105,7 @@ const logout = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   });
-  res.sendStatus(204); //forbidden
+  res.sendStatus(204); // forbidden
 });
 
 //Get all users
