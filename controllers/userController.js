@@ -13,7 +13,7 @@ const createUser = asyncHandler(async (req, res) => {
   if (!findEmail && !findMobile) {
     // Create a new user
     const user = User.create(req.body);
-    res.status(200).json({ message: "User created successfully" });
+    res.status(200).json(user);
   } else {
     // User already exists
     //res.status(400).json({ message: "User already exists" });
