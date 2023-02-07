@@ -186,8 +186,8 @@ const blockUser = asyncHandler(async (req, res) => {
         new: true,
       }
     );
-    console.log("User blocked successfully");
-    res.json(user);
+
+    res.json({ message: "User blocked successfully" });
   } catch (error) {
     throw new Error(error);
   }
@@ -208,10 +208,25 @@ const unBlockUser = asyncHandler(async (req, res) => {
         new: true,
       }
     );
-    console.log("User unblocked successfully");
-    res.json(user);
+
+    res.json({ message: "User unblocked successfully" });
   } catch (error) {
     throw new Error(error);
+  }
+});
+
+//update user password
+const updateUserPassword = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { password } = req.body;
+  validateMongodbId(_id);
+  const user = await User.findById(_id);
+  if (password) {
+    user.password = password;
+    const updatePassword = await user.save();
+    res.json(updatePassword);
+  } else {
+    res.json(user);
   }
 });
 
@@ -227,4 +242,5 @@ module.exports = {
   unBlockUser,
   handleRefreshToken,
   logout,
+  updateUserPassword,
 };
