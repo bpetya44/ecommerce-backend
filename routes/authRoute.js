@@ -12,6 +12,7 @@ const {
   handleRefreshToken,
   logout,
   updateUserPassword,
+  forgotPassword,
 } = require("../controllers/userController");
 
 const {
@@ -20,6 +21,7 @@ const {
 } = require("../middleware/authMiddleware");
 
 router.post("/register", createUser);
+router.post("/forgot-password", forgotPassword);
 router.post("/login", loginUser);
 router.put("/password", authMiddleware, updateUserPassword);
 

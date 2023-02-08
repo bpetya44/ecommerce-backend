@@ -4,6 +4,7 @@ const validateMongodbId = require("../utils/validateMongodbId");
 const jwt = require("jsonwebtoken");
 const generateToken = require("../config/jwt");
 const generateRefreshToken = require("../config/refreshToken");
+const sendEmail = require("../controllers/emailController");
 
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
@@ -230,6 +231,54 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   }
 });
 
+// Forgot password token
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("User not found with this email");
+  }
+
+  try {
+    const token = await user.createPasswordResetToken();
+    await user.save();
+    const resetUrl = `Hi, please click on the link to reset your Password. This link will expire in 10 minutes. 
+      <a href='http://localhost:4000/api/user/reset-password${token}' >Click here to reset your password</a>`;
+
+    const data = {
+      to: email,
+      text: "Hey User",
+      subject: "Forgot Password",
+      html: resetUrl,
+    };
+    sendEmail(data);
+    res.json(token);
+  } catch (error) {
+    throw new Error(error);
+  }
+
+  // const resetUrl = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/v1/users/resetpassword/${resetToken}`;
+  // const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+  // try {
+  //   await sendEmail({
+  //     email: user.email,
+  //     subject: "Password reset token",
+  //     message,
+  //   });
+  //   res.status(200).json({ success: true, data: "Email sent" });
+  // } catch (error) {
+  //   console.log(error);
+  //   user.resetPasswordToken = undefined;
+  //   user.resetPasswordExpire = undefined;
+  //   await user.save({ validateBeforeSave: false });
+  //   throw new Error("Email could not be sent");
+  // }
+
+  // res.json(user);
+});
+
 //Export all the functions
 module.exports = {
   createUser,
@@ -243,4 +292,5 @@ module.exports = {
   handleRefreshToken,
   logout,
   updateUserPassword,
+  forgotPassword,
 };
