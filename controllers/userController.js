@@ -14,7 +14,7 @@ const createUser = asyncHandler(async (req, res) => {
   const findMobile = await User.findOne({ mobile });
   if (!findEmail && !findMobile) {
     // Create a new user
-    const user = User.create(req.body);
+    const user = await User.create(req.body);
     res.status(200).json(user);
   } else {
     // User already exists
@@ -36,7 +36,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const refreshToken = await generateRefreshToken(findUser?._id);
     //console.log(refreshToken);
     const updateUser = await User.findByIdAndUpdate(
-      findUser?.id,
+      findUser.id,
       {
         refreshToken: refreshToken,
       },
@@ -123,10 +123,10 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 //Get user by id
 const getUserById = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongodbId(id);
+  const { _id } = req.user;
+  validateMongodbId(_id);
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(_id);
 
     res.json(user);
   } catch (error) {
