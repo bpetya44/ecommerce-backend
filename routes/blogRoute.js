@@ -3,6 +3,9 @@ const {
   createBlog,
   updateBlog,
   getBlog,
+  getAllBlogs,
+  deleteBlog,
+  likeBlog,
 } = require("../controllers/blogConrtoller");
 const {
   authMiddleware,
@@ -11,7 +14,10 @@ const {
 const router = express.Router();
 
 router.post("/", authMiddleware, adminMiddleware, createBlog);
+router.put("/likes", authMiddleware, likeBlog);
 router.put("/:id", authMiddleware, adminMiddleware, updateBlog);
-router.get("/:id", authMiddleware, adminMiddleware, getBlog);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteBlog);
+router.get("/:id", getBlog);
+router.get("/", getAllBlogs);
 
 module.exports = router;
