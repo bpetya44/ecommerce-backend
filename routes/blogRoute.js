@@ -6,6 +6,7 @@ const {
   getAllBlogs,
   deleteBlog,
   likeBlog,
+  dislikeBlog,
 } = require("../controllers/blogConrtoller");
 const {
   authMiddleware,
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, adminMiddleware, createBlog);
 router.put("/likes", authMiddleware, likeBlog);
+router.put("/dislikes", authMiddleware, dislikeBlog);
 router.put("/:id", authMiddleware, adminMiddleware, updateBlog);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteBlog);
 router.get("/:id", getBlog);
