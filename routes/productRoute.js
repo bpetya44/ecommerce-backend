@@ -11,13 +11,14 @@ const {
   getAllProducts,
   updateProduct,
   deleteProduct,
+  addToWishlist,
 } = require("../controllers/productController");
 
 router.post("/", authMiddleware, adminMiddleware, createProduct);
 router.get("/:id", getProduct);
+router.get("/", getAllProducts);
+router.put("/wishlist", authMiddleware, addToWishlist);
 router.put("/:id", authMiddleware, adminMiddleware, updateProduct);
 router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
-
-router.get("/", getAllProducts);
 
 module.exports = router;
