@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongodbId = require("../utils/validateMongodbId");
+const { get } = require("mongoose");
 
 //create product
 const createProduct = asyncHandler(async (req, res) => {
@@ -154,6 +155,105 @@ const addToWishlist = asyncHandler(async (req, res) => {
   }
 });
 
+// add rating
+const addRating = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { star, productId } = req.body;
+  validateMongodbId(_id);
+  validateMongodbId(productId);
+
+  try {
+    const product = await Product.findById(productId);
+    //check if user already rated the product
+    const alreadyRated = product.ratings.find(
+      (userId) => userId.postedBy.toString() === _id.toString()
+    );
+
+    if (alreadyRated) {
+      const updateRating = await Product.updateOne(
+        {
+          ratings: { $elemMatch: alreadyRated },
+        },
+        {
+          $set: { "ratings.$.star": star },
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      //add rating
+      const rateProduct = await Product.findByIdAndUpdate(
+        productId,
+        {
+          $push: { ratings: { star, postedBy: _id } },
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    //get average rating
+    const getRating = await Product.findById(productId);
+    let totalRatingNum = getRating.ratings.length;
+
+    let ratingSum = getRating.ratings
+      .map((rating) => rating.star)
+      .reduce((acc, curr) => acc + curr, 0);
+    let averageRating = Math.round(ratingSum / totalRatingNum);
+    console.log(averageRating);
+
+    //update product rating
+    const updateProductRating = await Product.findByIdAndUpdate(
+      productId,
+      {
+        totalrating: averageRating,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(updateProductRating);
+
+    // const getAverageRating = await Product.aggregate([
+    //   {
+    //     $match: { _id: mongoose.Types.ObjectId(productId) },
+    //   },
+    //   {
+    //     $project: {
+    //       document: "$$ROOT",
+    //       floorAverage: {
+    //         $floor: {
+    //           $avg: "$ratings.star",
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       ratingsAverage: "$floorAverage",
+    //     },
+    //   },
+    // ]);
+    //console.log(getAverageRating);
+    // const { ratingsAverage } = getAverageRating[0];
+    // const updateProductRating = await Product.findByIdAndUpdate(
+    //   productId,
+    //   {
+    //     ratingsAverage,
+    //   },
+    //   {
+    //     new: true,
+    //   }
+    // );
+    // res.json(updateProductRating);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//exports
 module.exports = {
   createProduct,
   getProduct,
@@ -161,4 +261,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   addToWishlist,
+  addRating,
 };
