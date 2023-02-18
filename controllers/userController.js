@@ -147,6 +147,23 @@ const logout = asyncHandler(async (req, res) => {
   res.sendStatus(204); // forbidden
 });
 
+// Save user address
+const saveUserAddress = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { address } = req.body;
+  validateMongodbId(_id);
+  try {
+    const user = await User.findByIdAndUpdate(
+      _id,
+      { address },
+      { new: true, runValidators: true }
+    );
+    res.json(user);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   try {
@@ -315,6 +332,20 @@ const resetPassword = asyncHandler(async (req, res) => {
   res.json(user);
 });
 
+//Get wishlist
+const getWishlist = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongodbId(_id);
+
+  try {
+    const findUser = await User.findById(_id).populate("wishlist");
+
+    res.json(findUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //Export all the functions
 module.exports = {
   createUser,
@@ -331,4 +362,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   loginAdmin,
+  getWishlist,
+  saveUserAddress,
 };
