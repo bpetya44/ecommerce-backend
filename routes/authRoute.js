@@ -20,6 +20,7 @@ const {
   userCart,
   getUserCart,
   emptyUserCart,
+  applyCouponToUserCart,
 } = require("../controllers/userController");
 
 const {
@@ -33,6 +34,7 @@ router.put("/reset-password/:token", resetPassword);
 router.post("/login", loginUser);
 router.post("/admin", loginAdmin);
 router.post("/cart", authMiddleware, userCart);
+router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
 router.put("/password", authMiddleware, updateUserPassword);
 
 router.get("/refresh", handleRefreshToken);
