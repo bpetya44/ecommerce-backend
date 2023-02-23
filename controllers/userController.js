@@ -1,4 +1,6 @@
 const User = require("../models/userModel");
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
 const asyncHandler = require("express-async-handler");
 const validateMongodbId = require("../utils/validateMongodbId");
 const jwt = require("jsonwebtoken");
@@ -346,6 +348,76 @@ const getWishlist = asyncHandler(async (req, res) => {
   }
 });
 
+//add to User Cart
+const userCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { cart } = req.body;
+  validateMongodbId(_id);
+  try {
+    let products = [];
+    const user = await User.findById(_id);
+    //check if user already has product in cart
+    const alreadyInCart = await Cart.findOne({ orderedBy: user._id });
+    if (alreadyInCart) {
+      alreadyInCart.remove();
+    }
+    //push new product to cart
+    for (let i = 0; i < cart.length; i++) {
+      let object = {};
+      object.product = cart[i]._id;
+      object.count = cart[i].count;
+      object.color = cart[i].color;
+      let getPrice = await Product.findById(cart[i]._id).select("price").exec();
+      object.price = getPrice.price;
+      products.push(object);
+    }
+    // console.log(products);
+    //get cart total
+    let cartTotal = 0;
+    for (let i = 0; i < products.length; i++) {
+      cartTotal = cartTotal + products[i].price * products[i].count;
+    }
+    //console.log(products, cartTotal);
+    //create new cart
+    let newCart = await new Cart({
+      products,
+      cartTotal,
+      orderedBy: user?._id,
+    }).save();
+    res.json(newCart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//Get user cart
+const getUserCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongodbId(_id);
+  try {
+    const cart = await Cart.findOne({ orderedBy: _id }).populate(
+      "products.product"
+    );
+    res.json(cart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//empty user cart
+const emptyUserCart = asyncHandler(async (req, res) => {
+  console.log(req.user);
+  const { _id } = req.user;
+  validateMongodbId(_id);
+  try {
+    const user = await User.findOne({ _id });
+    const cart = await Cart.findOneAndRemove({ orderedBy: user._id });
+    res.json(cart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //Export all the functions
 module.exports = {
   createUser,
@@ -364,4 +436,7 @@ module.exports = {
   loginAdmin,
   getWishlist,
   saveUserAddress,
+  userCart,
+  getUserCart,
+  emptyUserCart,
 };
