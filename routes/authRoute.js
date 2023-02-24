@@ -21,6 +21,7 @@ const {
   getUserCart,
   emptyUserCart,
   applyCouponToUserCart,
+  createOrder,
 } = require("../controllers/userController");
 
 const {
@@ -35,6 +36,7 @@ router.post("/login", loginUser);
 router.post("/admin", loginAdmin);
 router.post("/cart", authMiddleware, userCart);
 router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
+router.post("/cart/cash-order", authMiddleware, createOrder);
 router.put("/password", authMiddleware, updateUserPassword);
 
 router.get("/refresh", handleRefreshToken);

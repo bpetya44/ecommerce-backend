@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const Coupon = require("../models/couponModel");
+const Order = require("../models/orderModel");
 const asyncHandler = require("express-async-handler");
 const validateMongodbId = require("../utils/validateMongodbId");
 const jwt = require("jsonwebtoken");
@@ -9,6 +10,7 @@ const generateToken = require("../config/jwt");
 const generateRefreshToken = require("../config/refreshToken");
 const sendEmail = require("../controllers/emailController");
 const crypto = require("crypto");
+const uniqid = require("uniqid");
 
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
@@ -459,6 +461,57 @@ const applyCouponToUserCart = asyncHandler(async (req, res) => {
   }
 });
 
+//create order
+const createOrder = asyncHandler(async (req, res) => {
+  const { COD, couponApplied } = req.body;
+  if (!COD) throw new Error("Create cash order failed");
+
+  const { _id } = req.user;
+  validateMongodbId(_id);
+  try {
+    const user = await User.findById(_id);
+    const userCart = await Cart.findOne({ orderedBy: user._id })
+      .populate("products.product", "_id title price")
+      .exec();
+    //console.log(userCart);
+    //create order
+    let finalAmount = 0;
+    if (couponApplied && userCart.totalAfterDiscount) {
+      finalAmount = userCart.totalAfterDiscount;
+    } else {
+      finalAmount = userCart.cartTotal;
+    }
+    const newOrder = await new Order({
+      products: userCart.products,
+      paymentIntent: {
+        id: uniqid(),
+        method: "COD",
+        amount: finalAmount,
+        currency: "usd",
+        status: "Cash On Delivery",
+        created: Date.now(),
+        payment_method_types: ["cash"],
+      },
+      orderedBy: user._id,
+      orderStatus: "Cash On Delivery",
+    }).save();
+    //decrement quantity, increment sold
+    const bulkOption = userCart.products.map((item) => {
+      return {
+        updateOne: {
+          filter: { _id: item.product._id },
+          update: { $inc: { quantity: -item.count, sold: +item.count } },
+        },
+      };
+    });
+    let updated = await Product.bulkWrite(bulkOption, {});
+    console.log(updated);
+    res.json(newOrder);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //Export all the functions
 module.exports = {
   createUser,
@@ -481,4 +534,5 @@ module.exports = {
   getUserCart,
   emptyUserCart,
   applyCouponToUserCart,
+  createOrder,
 };
