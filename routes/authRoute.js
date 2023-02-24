@@ -23,6 +23,7 @@ const {
   applyCouponToUserCart,
   createOrder,
   getUserOrders,
+  updateOrderStatus,
 } = require("../controllers/userController");
 
 const {
@@ -39,6 +40,12 @@ router.post("/cart", authMiddleware, userCart);
 router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
 router.post("/cart/cash-order", authMiddleware, createOrder);
 router.put("/password", authMiddleware, updateUserPassword);
+router.put(
+  "/order/update-order/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateOrderStatus
+);
 
 router.get("/refresh", handleRefreshToken);
 router.get("/all-users", getAllUsers);
