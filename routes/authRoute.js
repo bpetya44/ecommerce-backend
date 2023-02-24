@@ -22,6 +22,7 @@ const {
   emptyUserCart,
   applyCouponToUserCart,
   createOrder,
+  getUserOrders,
 } = require("../controllers/userController");
 
 const {
@@ -41,6 +42,7 @@ router.put("/password", authMiddleware, updateUserPassword);
 
 router.get("/refresh", handleRefreshToken);
 router.get("/all-users", getAllUsers);
+router.get("/get-orders", authMiddleware, getUserOrders);
 router.get("/:id", authMiddleware, getUserById);
 router.get("/wishlist", authMiddleware, getWishlist);
 router.get("/get-cart", authMiddleware, getUserCart);
