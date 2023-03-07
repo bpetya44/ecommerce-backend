@@ -15,13 +15,14 @@ const brandCategoryRouter = require("./routes/brandCategoryRoute");
 const couponRouter = require("./routes/couponRoute");
 const colorRouter = require("./routes/colorRoute");
 const enquiryRouter = require("./routes/enquiryRoute");
-
+const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 
 dbConnect();
 
 app.use(morgan("dev"));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());

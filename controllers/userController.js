@@ -53,7 +53,7 @@ const loginUser = asyncHandler(async (req, res) => {
     });
     res.json({
       _id: findUser?._id,
-      firstName: findUser?.name,
+      firstName: findUser?.firstName,
       lastName: findUser?.lastName,
       email: findUser?.email,
       mobile: findUser?.mobile,
@@ -91,7 +91,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
     });
     res.json({
       _id: findAdmin?._id,
-      firstName: findAdmin?.name,
+      firstName: findAdmin?.firstName,
       lastName: findAdmin?.lastName,
       email: findAdmin?.email,
       mobile: findAdmin?.mobile,
