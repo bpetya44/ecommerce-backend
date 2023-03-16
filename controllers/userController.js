@@ -24,7 +24,8 @@ const createUser = asyncHandler(async (req, res) => {
   } else {
     // User already exists
     //res.status(400).json({ message: "User already exists" });
-    throw new Error("User already exists");
+    if (findEmail) throw new Error("Email already exists");
+    if (findMobile) throw new Error("Mobile already exists");
   }
 });
 
@@ -47,10 +48,15 @@ const loginUser = asyncHandler(async (req, res) => {
       },
       { new: true }
     );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000, // 3 days
-    });
+    res.cookie(
+      "refreshToken",
+      refreshToken,
+      {
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000, // 3 days
+      },
+      { secure: true }
+    );
     res.json({
       _id: findUser?._id,
       firstName: findUser?.firstName,
@@ -85,10 +91,15 @@ const loginAdmin = asyncHandler(async (req, res) => {
       },
       { new: true }
     );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000, // 3 days
-    });
+    res.cookie(
+      "refreshToken",
+      refreshToken,
+      {
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000, // 3 days
+      },
+      { secure: true }
+    );
     res.json({
       _id: findAdmin?._id,
       firstName: findAdmin?.firstName,
@@ -512,13 +523,29 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
-//Get orders
+//Get User orders
 const getUserOrders = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongodbId(_id);
   try {
     const orders = await Order.find({ orderedBy: _id })
       .populate("products.product")
+      .populate("orderedBy")
+      .exec();
+
+    res.json(orders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//Get all orders
+const getAllOrders = asyncHandler(async (req, res) => {
+  try {
+    const orders = await Order.find({})
+
+      .populate("products.product")
+      .populate("orderedBy")
       .exec();
 
     res.json(orders);
@@ -574,4 +601,5 @@ module.exports = {
   createOrder,
   getUserOrders,
   updateOrderStatus,
+  getAllOrders,
 };

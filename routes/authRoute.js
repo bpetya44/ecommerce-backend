@@ -24,6 +24,7 @@ const {
   createOrder,
   getUserOrders,
   updateOrderStatus,
+  getAllOrders,
 } = require("../controllers/userController");
 
 const {
@@ -50,6 +51,7 @@ router.put(
 router.get("/refresh", handleRefreshToken);
 router.get("/all-users", getAllUsers);
 router.get("/get-orders", authMiddleware, getUserOrders);
+router.get("/get-all-orders", authMiddleware, getAllOrders);
 router.get("/:id", authMiddleware, getUserById);
 router.get("/wishlist", authMiddleware, getWishlist);
 router.get("/get-cart", authMiddleware, getUserCart);
