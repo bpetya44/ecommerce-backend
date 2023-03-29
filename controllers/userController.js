@@ -524,12 +524,28 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
-//Get User orders
-const getUserOrders = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  validateMongodbId(_id);
+//Get User's orders
+// const getUserOrders = asyncHandler(async (req, res) => {
+//   const { _id } = req.user;
+//   validateMongodbId(_id);
+//   try {
+//     const orders = await Order.find({ orderedBy: _id })
+//       .populate("products.product")
+//       .populate("orderedBy")
+//       .exec();
+
+//     res.json(orders);
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+//Get Order By User Id
+const getOrderById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
   try {
-    const orders = await Order.find({ orderedBy: _id })
+    const orders = await Order.find({ orderedBy: id })
       .populate("products.product")
       .populate("orderedBy")
       .exec();
@@ -600,7 +616,8 @@ module.exports = {
   emptyUserCart,
   applyCouponToUserCart,
   createOrder,
-  getUserOrders,
+  // getUserOrders,
   updateOrderStatus,
   getAllOrders,
+  getOrderById,
 };
