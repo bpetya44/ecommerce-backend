@@ -77,7 +77,8 @@ const loginAdmin = asyncHandler(async (req, res) => {
 
   //check if user exists
   const findAdmin = await User.findOne({ email });
-  if (findAdmin.role !== "admin") throw new Error("Not authorized");
+  if (!findAdmin || findAdmin.role !== "admin")
+    throw new Error("Not authorized");
   const isPasswordMatch = await findAdmin.isPasswordMatch(password);
 
   if (findAdmin && isPasswordMatch) {
