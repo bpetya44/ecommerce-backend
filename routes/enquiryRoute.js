@@ -12,7 +12,7 @@ const {
 } = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.post("/", authMiddleware, createEnquiry);
+router.post("/", createEnquiry);
 router.put("/:id", authMiddleware, updateEnquiry);
 router.delete("/:id", authMiddleware, deleteEnquiry);
 

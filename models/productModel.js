@@ -1,3 +1,4 @@
+const { Mongoose } = require("mongoose");
 const mongoose = require("mongoose");
 
 // Declare the Schema of the Mongo model
@@ -44,7 +45,7 @@ var productSchema = new mongoose.Schema(
         url: String,
       },
     ],
-    color: [],
+    color: [{ type: mongoose.Schema.Types.ObjectId, ref: "Color" }],
     tags: String,
     ratings: [
       {

@@ -17,7 +17,7 @@ const {
   loginAdmin,
   getWishlist,
   saveUserAddress,
-  userCart,
+  addToUserCart,
   getUserCart,
   emptyUserCart,
   applyCouponToUserCart,
@@ -38,7 +38,7 @@ router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 router.post("/login", loginUser);
 router.post("/admin", loginAdmin);
-router.post("/cart", authMiddleware, userCart);
+router.post("/cart", authMiddleware, addToUserCart);
 router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
 router.post("/cart/cash-order", authMiddleware, createOrder);
 router.put("/password", authMiddleware, updateUserPassword);
@@ -56,7 +56,7 @@ router.get("/get-all-orders", authMiddleware, getAllOrders);
 router.post("/get-order/:id", authMiddleware, getOrderById);
 router.get("/:id", authMiddleware, getUserById);
 router.get("/wishlist", authMiddleware, getWishlist);
-router.get("/get-cart", authMiddleware, getUserCart);
+router.get("/cart-get", authMiddleware, getUserCart);
 router.delete("/empty-cart", authMiddleware, emptyUserCart);
 router.put("/logout", logout);
 
