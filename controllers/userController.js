@@ -385,12 +385,13 @@ const addToUserCart = asyncHandler(async (req, res) => {
 //Get user cart
 const getUserCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
+  const { productId } = req.body;
   validateMongodbId(_id);
   try {
     const cart = await Cart.find({ userId: _id })
       .populate("productId")
-      .populate("color");
-
+      .populate("color")
+      .exec();
     res.json(cart);
   } catch (error) {
     throw new Error(error);
