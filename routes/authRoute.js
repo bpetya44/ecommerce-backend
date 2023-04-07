@@ -26,6 +26,8 @@ const {
   updateOrderStatus,
   getAllOrders,
   getOrderById,
+  removeProductFromCart,
+  updateProductQuantityFromCart,
 } = require("../controllers/userController");
 
 const {
@@ -59,6 +61,17 @@ router.get("/:id", authMiddleware, getUserById);
 router.get("/wishlist", authMiddleware, getWishlist);
 
 router.delete("/empty-cart", authMiddleware, emptyUserCart);
+router.delete(
+  "/update-product-cart/:cartItemId/:newQuantity",
+  authMiddleware,
+  updateProductQuantityFromCart
+);
+router.delete(
+  "/delete-product-cart/:cartItemId",
+  authMiddleware,
+  removeProductFromCart
+);
+
 router.put("/logout", logout);
 
 router.delete("/:id", deleteUserById);
