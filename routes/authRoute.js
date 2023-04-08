@@ -19,15 +19,14 @@ const {
   saveUserAddress,
   addToUserCart,
   getUserCart,
-  emptyUserCart,
-  applyCouponToUserCart,
-  createOrder,
-  // getUserOrders,
-  updateOrderStatus,
-  getAllOrders,
-  getOrderById,
+  // emptyUserCart,
+  // applyCouponToUserCart,
+  // updateOrderStatus,
+  // getAllOrders,
+  // getOrderById,
   removeProductFromCart,
   updateProductQuantityFromCart,
+  createOrder,
 } = require("../controllers/userController");
 
 const {
@@ -42,25 +41,25 @@ router.post("/login", loginUser);
 router.post("/admin", loginAdmin);
 router.post("/cart", authMiddleware, addToUserCart);
 router.get("/cart-get", authMiddleware, getUserCart);
-router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
-router.post("/cart/cash-order", authMiddleware, createOrder);
+router.post("/cart/create-order", authMiddleware, createOrder);
 router.put("/password", authMiddleware, updateUserPassword);
-router.put(
-  "/order/update-order/:id",
-  authMiddleware,
-  adminMiddleware,
-  updateOrderStatus
-);
+// router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
+// router.put(
+//   "/order/update-order/:id",
+//   authMiddleware,
+//   adminMiddleware,
+//   updateOrderStatus
+// );
 
 router.get("/refresh", handleRefreshToken);
 router.get("/all-users", getAllUsers);
 //router.get("/get-orders", authMiddleware, getUserOrders);
-router.get("/get-all-orders", authMiddleware, getAllOrders);
-router.post("/get-order/:id", authMiddleware, getOrderById);
+// router.get("/get-all-orders", authMiddleware, getAllOrders);
+// router.post("/get-order/:id", authMiddleware, getOrderById);
 router.get("/:id", authMiddleware, getUserById);
 router.get("/wishlist", authMiddleware, getWishlist);
-
-router.delete("/empty-cart", authMiddleware, emptyUserCart);
+//router.post("/cart/apply-coupon", authMiddleware, applyCouponToUserCart);
+//router.delete("/empty-cart", authMiddleware, emptyUserCart);
 router.delete(
   "/update-product-cart/:cartItemId/:newQuantity",
   authMiddleware,

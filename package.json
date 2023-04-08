@@ -26,6 +26,7 @@
     "nodemailer": "^6.9.1",
     "sharp": "^0.31.3",
     "slugify": "^1.6.5",
+    "stripe": "^12.3.0",
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
