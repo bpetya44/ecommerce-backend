@@ -232,7 +232,6 @@ const updateUserById = asyncHandler(async (req, res) => {
         lastName: req.body.lastName,
         email: req.body.email,
         mobile: req.body.mobile,
-        isAdmin: req.body.isAdmin,
       },
       {
         new: true,
@@ -458,6 +457,21 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
+const getMyOrders = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  try {
+    const orders = await Order.find({ user: _id })
+      .populate("orderItems.product")
+      .populate("user", "firstName lastName email mobile")
+
+      .exec();
+
+    res.json(orders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 // //empty user cart
 // const emptyUserCart = asyncHandler(async (req, res) => {
 //   console.log(req.user);
@@ -655,4 +669,5 @@ module.exports = {
   removeProductFromCart,
   updateProductQuantityFromCart,
   createOrder,
+  getMyOrders,
 };

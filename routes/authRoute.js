@@ -27,6 +27,7 @@ const {
   removeProductFromCart,
   updateProductQuantityFromCart,
   createOrder,
+  getMyOrders,
 } = require("../controllers/userController");
 
 const {
@@ -40,6 +41,7 @@ router.put("/reset-password/:token", resetPassword);
 router.post("/login", loginUser);
 router.post("/admin", loginAdmin);
 router.post("/cart", authMiddleware, addToUserCart);
+router.get("/getmyorders", authMiddleware, getMyOrders);
 router.get("/cart-get", authMiddleware, getUserCart);
 router.post("/cart/create-order", authMiddleware, createOrder);
 router.put("/password", authMiddleware, updateUserPassword);
@@ -75,7 +77,7 @@ router.put("/logout", logout);
 
 router.delete("/:id", deleteUserById);
 
-router.put("/edit-user", authMiddleware, updateUserById);
+router.put("/update-user", authMiddleware, updateUserById);
 router.put("/save-address", authMiddleware, saveUserAddress);
 router.put("/block-user/:id", authMiddleware, adminMiddleware, blockUser);
 router.put("/unblock-user/:id", authMiddleware, adminMiddleware, unBlockUser);

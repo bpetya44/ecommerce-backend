@@ -45,11 +45,11 @@ var orderSchema = new mongoose.Schema(
       },
     },
     paymentInfo: {
-      razorpayOrderId: {
+      stripeOrderId: {
         type: String,
         required: true,
       },
-      razorpayPaymentId: {
+      stripePaymentId: {
         type: String,
         required: true,
       },
