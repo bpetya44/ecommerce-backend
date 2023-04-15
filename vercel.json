@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         { "src": "*.js",
-         "use": "@versel/node" 
+         "use": "@now/node-server"
         }
     ],
     "routes": [
