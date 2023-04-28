@@ -462,19 +462,155 @@ const createOrder = asyncHandler(async (req, res) => {
   }
 });
 
+//get My orders
 const getMyOrders = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   try {
     const orders = await Order.find({ user: _id })
       .populate("orderItems.product")
       .populate("user", "firstName lastName email mobile")
-
       .exec();
 
     res.json(orders);
   } catch (error) {
     throw new Error(error);
   }
+});
+
+//get All orders
+const getAllOrders = asyncHandler(async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate("orderItems.product")
+      .populate("user", "firstName lastName email mobile")
+      .exec();
+
+    res.json(orders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//get order by id
+const getOrderById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  try {
+    const order = await Order.findOne({ _id: id })
+      .populate("orderItems.product")
+      .populate("orderItems.color")
+      .populate("user", "firstName lastName email mobile")
+      .exec();
+
+    res.json(order);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//update order status
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  console.log(id);
+  try {
+    const order = await Order.findById(id);
+    order.orderStatus = req.body.status;
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//get orders income by month
+const getMonthIncome = asyncHandler(async (req, res) => {
+  let monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let d = new Date();
+  let endDate = "";
+  d.setDate(1);
+  for (let i = 0; i < 11; i++) {
+    d.setMonth(d.getMonth() - 1);
+    endDate = monthNames[d.getMonth()] + " " + d.getFullYear();
+  }
+  console.log(endDate);
+  const data = await Order.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $lte: new Date(),
+          $gte: new Date(endDate),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: "$createdAt" },
+        },
+        amount: { $sum: "$totalPriceAfterDiscount" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+  res.json(data);
+});
+
+//get orders income by year
+const getYearOrders = asyncHandler(async (req, res) => {
+  let monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let d = new Date();
+  let endDate = "";
+  d.setDate(1);
+  for (let i = 0; i < 11; i++) {
+    d.setMonth(d.getMonth() - 1);
+    endDate = monthNames[d.getMonth()] + " " + d.getFullYear();
+  }
+  console.log(endDate);
+  const data = await Order.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $lte: new Date(),
+          $gte: new Date(endDate),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        count: { $sum: 1 },
+        amount: { $sum: "$totalPriceAfterDiscount" },
+      },
+    },
+  ]);
+  res.json(data);
 });
 
 // //empty user cart
@@ -598,12 +734,12 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // //   }
 // // });
 
-// //Get Order By User Id
+//Get Order By  Id
 // const getOrderById = asyncHandler(async (req, res) => {
-//   const { id } = req.params;
+//   const { _id } = req.params;
 //   validateMongodbId(id);
 //   try {
-//     const orders = await Order.find({ orderedBy: id })
+//     const orders = await Order.findOne({ _id })
 //       .populate("products.product")
 //       .populate("orderedBy")
 //       .exec();
@@ -675,4 +811,9 @@ module.exports = {
   updateProductQuantityFromCart,
   createOrder,
   getMyOrders,
+  getMonthIncome,
+  getYearOrders,
+  getAllOrders,
+  getOrderById,
+  updateOrderStatus,
 };
