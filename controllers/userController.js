@@ -17,16 +17,18 @@ const { log } = require("console");
 const createUser = asyncHandler(async (req, res) => {
   const { email, mobile } = req.body;
   const findEmail = await User.findOne({ email });
-  const findMobile = await User.findOne({ mobile });
-  if (!findEmail && !findMobile) {
-    // Create a new user
-    const user = await User.create(req.body);
-    res.status(200).json(user);
+
+  console.log(findEmail);
+  if (!findEmail) {
+    const findMobile = await User.findOne({ mobile });
+    if (!findMobile) {
+      const user = await User.create(req.body);
+      res.json(user);
+    } else {
+      throw new Error("Mobile alredy exist");
+    }
   } else {
-    // User already exists
-    //res.status(400).json({ message: "User already exists" });
-    if (findEmail) throw new Error("Email already exists");
-    if (findMobile) throw new Error("Mobile already exists");
+    throw new Error("Email alredy exist");
   }
 });
 
@@ -36,39 +38,42 @@ const loginUser = asyncHandler(async (req, res) => {
 
   //check if user exists
   const findUser = await User.findOne({ email });
-  const isPasswordMatch = await findUser.isPasswordMatch(password);
 
-  if (findUser && isPasswordMatch) {
-    // Generate refresh token
-    const refreshToken = await generateRefreshToken(findUser?._id);
-    //console.log(refreshToken);
-    const updateUser = await User.findByIdAndUpdate(
-      findUser.id,
-      {
-        refreshToken: refreshToken,
-      },
-      { new: true }
-    );
-    res.cookie(
-      "refreshToken",
-      refreshToken,
-      {
-        httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000, // 3 days
-      },
-      { secure: true }
-    );
-    res.json({
-      _id: findUser?._id,
-      firstName: findUser?.firstName,
-      lastName: findUser?.lastName,
-      email: findUser?.email,
-      mobile: findUser?.mobile,
-      token: generateToken(findUser?._id),
-    });
+  if (findUser) {
+    const isPasswordMatch = await findUser.isPasswordMatch(password);
+    if (!isPasswordMatch) {
+      throw new Error("Password is incorrect. Please try again");
+    } else {
+      // Generate refresh token
+      const refreshToken = await generateRefreshToken(findUser?._id);
+      //console.log(refreshToken);
+      const updateUser = await User.findByIdAndUpdate(
+        findUser.id,
+        {
+          refreshToken: refreshToken,
+        },
+        { new: true }
+      );
+      res.cookie(
+        "refreshToken",
+        refreshToken,
+        {
+          httpOnly: true,
+          maxAge: 72 * 60 * 60 * 1000, // 3 days
+        },
+        { secure: true }
+      );
+      res.json({
+        _id: findUser?._id,
+        firstName: findUser?.firstName,
+        lastName: findUser?.lastName,
+        email: findUser?.email,
+        mobile: findUser?.mobile,
+        token: generateToken(findUser?._id),
+      });
+    }
   } else {
-    //res.status(400).json({ message: "Invalid credentials. Please try again" });
-    throw new Error("Invalid credentials. Please try again");
+    throw new Error("No user found with this email.");
   }
 });
 

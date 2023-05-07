@@ -6,7 +6,7 @@ const validateMongodbId = require("../utils/validateMongodbId");
 //create checkout session
 const createCheckoutSession = asyncHandler(async (req, res) => {
   const { cartItems } = req.body;
-  console.log(cartItems);
+  // console.log(cartItems);
 
   const line_items = cartItems.map((item) => {
     return {
@@ -15,10 +15,11 @@ const createCheckoutSession = asyncHandler(async (req, res) => {
         product_data: {
           name: item.productId.title,
           images: [
-            "https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2015&q=80",
+            item.productId.images[0].url || "https://i.imgur.com/7I6Wasd.png",
           ],
           metadata: {
             id: item.productId._id.toString(),
+            color: item.color.title,
           },
         },
         unit_amount: item.price * 100,
